@@ -2,8 +2,10 @@ package config
 
 import (
 	"fmt"
+
 	"github.com/spf13/viper"
 )
+
 type Config struct {
 	ApiServerPort string
 	Redis         string
@@ -30,5 +32,6 @@ func LoadConfig() (Config, error) {
 		LogLevel:      viper.GetString("LOG_LEVEL"),
 	}
 
+	fmt.Println("Config loaded")
 	return c, nil
 }

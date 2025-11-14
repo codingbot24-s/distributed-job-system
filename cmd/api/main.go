@@ -6,10 +6,12 @@ import (
 	"net/http"
 
 	"github.com/codingbot24-s/distributed-job-system/pkg/config"
+	"github.com/codingbot24-s/distributed-job-system/pkg/logger"
 )
 
 func main() {
-	_,err := config.LoadConfig()	
+	_, err := config.LoadConfig()
+	logger.LoggerInit()
 	if err != nil {
 		log.Fatal(err)
 	}
