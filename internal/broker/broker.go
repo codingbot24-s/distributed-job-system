@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/codingbot24-s/distributed-job-system/internal/job"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -41,3 +42,15 @@ func (r *redisClientstruct) CheckRedisConnection() (string, error) {
 	fmt.Println(pong)
 	return pong, nil
 }
+
+// TODO: must be safe for concurrent call
+func (r *redisClientstruct) Enqueue(job *job.Job) error {
+	// serialize the job into json 
+
+	// push the job to redis
+
+	// return the jobId or error
+
+
+}
+
