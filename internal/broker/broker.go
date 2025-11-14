@@ -15,25 +15,29 @@ type redisClientstruct struct {
 
 // enque deque acnknowlege retry
 // TODO: create redis client and connect with it
-func CreateRedisClient(redisUrl string) (*redisClientstruct,error) {
-	opt,err := redis.ParseURL(redisUrl)
-	fmt.Println(redisUrl)
+func CreateRedisClient(redisUrl string) (*redisClientstruct, error) {
+	// initialize a local logger instance (quick usage)
+
+	opt, err := redis.ParseURL(redisUrl)
 	if err != nil {
-		return nil,fmt.Errorf("error parsing redis url")
+		return nil, fmt.Errorf("error parsing redis url: %w", err)
 	}
+
 	redisClient := redis.NewClient(opt)
-	rc := redisClientstruct {
+	rc := redisClientstruct{
 		client: redisClient,
 	}
-	return &rc,nil
+
+	fmt.Println("redis client created")
+	return &rc, nil
 }
 
-// ping redis for connection check
-func(r *redisClientstruct) CheckRedisConnection() (string,error) {
-	pong,err := r.client.Ping(ctx).Result()
+func (r *redisClientstruct) CheckRedisConnection() (string, error) {
+	pong, err := r.client.Ping(ctx).Result()
 	if err != nil {
-		return "",fmt.Errorf("error getting ping repsonse")
+		return "", fmt.Errorf("error getting ping response: %w", err)
 	}
 
-	return pong,nil
+	fmt.Println(pong)
+	return pong, nil
 }

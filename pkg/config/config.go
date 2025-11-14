@@ -32,6 +32,6 @@ func LoadConfig() (Config, error) {
 		LogLevel:      viper.GetString("LOG_LEVEL"),
 	}
 
-	fmt.Println("Config loaded")
+	
 	return c, nil
 }
