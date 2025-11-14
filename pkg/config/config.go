@@ -2,12 +2,8 @@ package config
 
 import (
 	"fmt"
-
 	"github.com/spf13/viper"
 )
-
-// load env here
-
 type Config struct {
 	ApiServerPort string
 	Redis         string
@@ -15,14 +11,24 @@ type Config struct {
 	LogLevel      string
 }
 
-func (c *Config) LoadConfig() error {
-	viper.AddConfigPath("../../.env")
+func LoadConfig() (Config, error) {
+	viper.AutomaticEnv()
+
+	viper.SetConfigFile(".env")
 	viper.SetConfigType("env")
 
-	err := viper.ReadInConfig()
-	if err != nil {
-		return fmt.Errorf("error reading config %w", err)
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return Config{}, fmt.Errorf("error reading config file: %w", err)
+		}
 	}
 
-	return nil
+	c := Config{
+		ApiServerPort: viper.GetString("API_SERVER_PORT"),
+		Redis:         viper.GetString("REDIS"),
+		Postgres:      viper.GetString("POSTGRES"),
+		LogLevel:      viper.GetString("LOG_LEVEL"),
+	}
+
+	return c, nil
 }

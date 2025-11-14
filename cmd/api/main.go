@@ -1,13 +1,18 @@
 package main
 
-
-
 import (
 	"fmt"
+	"log"
 	"net/http"
+
+	"github.com/codingbot24-s/distributed-job-system/pkg/config"
 )
 
 func main() {
+	_,err := config.LoadConfig()	
+	if err != nil {
+		log.Fatal(err)
+	}
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "OK")
 	})
