@@ -11,3 +11,4 @@ func LoggerInit() {
 	log.Debug("This is a DEBUG message")
 	log.Info("This is an INFO message")
 }
+
