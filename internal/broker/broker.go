@@ -12,7 +12,7 @@ import (
 
 var ctx = context.Background()
 
-// redis client instance 
+// redis client instance
 var (
 	clientMu       sync.RWMutex
 	clientInstance *redis.Client
@@ -64,7 +64,7 @@ func GetRedisClient() *redis.Client {
 // enque the job into the redis return the job ID or error
 // here we only want to push into redis
 func EnqueueToRedis(j *jobtype.Job) (string, error) {
-	// serialize the job into json convert the golang job struct to json
+	// marshall will return the bytes
 	jsonData, err := json.Marshal(*j)
 	if err != nil {
 		return "", fmt.Errorf("error marshaling struct %w", err)
@@ -78,7 +78,7 @@ func EnqueueToRedis(j *jobtype.Job) (string, error) {
 	entryID, err := r.XAdd(ctx, &redis.XAddArgs{
 		Stream: streamName,
 		ID:     "*",
-		Values: jsonData,
+		Values: map[string]interface{}{"job": string(jsonData)},
 	}).Result()
 	if err != nil {
 		return "", fmt.Errorf("error adding job to stream: %w", err)

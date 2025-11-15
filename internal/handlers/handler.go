@@ -29,15 +29,14 @@ func EnqueueHandler(c *fiber.Ctx) error {
 	jobId, err := broker.EnqueueToRedis(job)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error " : err.Error(),
-			"message" : "error in enque",
+			"error ":  err.Error(),
+			"message": "error in enque",
 		})
 	}
 	fmt.Println("router workin correctly")
-	return c.JSON(fiber.Map{
-		"status":      c.Status(200),
-		"jobId":       jobId,
-		"Job status ": "enqueued",
-		"jobType":     job.JobType,
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"jobid":      jobId,
+		"job status": "enqueued",
+		"job type":   job.JobType,
 	})
 }
