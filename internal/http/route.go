@@ -1,3 +1,8 @@
 package route
 
-// endpoints/
+// endpoints//
+
+func StartRouter () {
+	
+}
+
