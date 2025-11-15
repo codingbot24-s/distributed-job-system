@@ -35,3 +35,14 @@ func LoadConfig() (Config, error) {
 	
 	return c, nil
 }
+
+
+type WorkerConfig struct {
+	WorkerId string
+	// number of goroutines 
+	Concurrency int
+	// how frequently worker check for new job
+	PollInterval int
+	QueueName string
+	ShutdownTimeout int
+}
