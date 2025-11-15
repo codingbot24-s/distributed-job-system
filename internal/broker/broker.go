@@ -4,12 +4,19 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 
-	"github.com/codingbot24-s/distributed-job-system/internal/job"
+	jobtype "github.com/codingbot24-s/distributed-job-system/internal/job"
 	"github.com/redis/go-redis/v9"
 )
 
 var ctx = context.Background()
+
+// redis client instance 
+var (
+	clientMu       sync.RWMutex
+	clientInstance *redis.Client
+)
 
 type redisClientstruct struct {
 	client *redis.Client
@@ -18,8 +25,6 @@ type redisClientstruct struct {
 // enque deque acnknowlege retry
 // TODO: create redis client and connect with it
 func CreateRedisClient(redisUrl string) (*redisClientstruct, error) {
-	// initialize a local logger instance (quick usage)
-
 	opt, err := redis.ParseURL(redisUrl)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing redis url: %w", err)
@@ -29,6 +34,10 @@ func CreateRedisClient(redisUrl string) (*redisClientstruct, error) {
 	rc := redisClientstruct{
 		client: redisClient,
 	}
+
+	clientMu.Lock()
+	clientInstance = redisClient
+	clientMu.Unlock()
 
 	fmt.Println("redis client created")
 	return &rc, nil
@@ -44,28 +53,39 @@ func (r *redisClientstruct) CheckRedisConnection() (string, error) {
 	return pong, nil
 }
 
+func GetRedisClient() *redis.Client {
+	clientMu.RLock()
+	c := clientInstance
+	clientMu.RUnlock()
+	return c
+}
+
 // TODO: must be safe for concurrent call
 // enque the job into the redis return the job ID or error
 // here we only want to push into redis
-func (r *redisClientstruct) EnqueueToRedis(job *job.Job) (string,error) {
+func EnqueueToRedis(j *jobtype.Job) (string, error) {
 	// serialize the job into json convert the golang job struct to json
-	jsonData, err := json.Marshal(*job)
+	jsonData, err := json.Marshal(*j)
 	if err != nil {
-		return "",fmt.Errorf("error marshaling struct %w", err)
+		return "", fmt.Errorf("error marshaling struct %w", err)
 	}
 	// push the job to redis
+	r := GetRedisClient()
+	if r == nil {
+		return "", fmt.Errorf("redis client not initialized")
+	}
 	streamName := "Jobs"
-	entryID,err := r.client.XAdd(ctx, &redis.XAddArgs{
+	entryID, err := r.XAdd(ctx, &redis.XAddArgs{
 		Stream: streamName,
 		ID:     "*",
 		Values: jsonData,
 	}).Result()
-	fmt.Printf("Added entry to stream '%s' with ID: %s\n", streamName, entryID)
-
 	if err != nil {
-		return "",fmt.Errorf("error adding job to stream %w",err)
+		return "", fmt.Errorf("error adding job to stream: %w", err)
 	}
 
+	fmt.Printf("Added entry to stream '%s' with ID: %s\n", streamName, entryID)
+
 	// return the jobId or error
-	return streamName,nil
+	return entryID, nil
 }

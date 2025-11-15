@@ -7,13 +7,10 @@ import (
 
 // endpoints//
 
-func StartRouter () {
+func StartRouter() {
 	app := fiber.New()
-	
-	app.Post("/api/v1/jobs",handler.EnqueueHandler)
 
-
+	app.Post("/api/v1/jobs", handler.EnqueueHandler)
 
 	app.Listen(":8000")
 }
-
