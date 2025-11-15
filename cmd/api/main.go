@@ -29,5 +29,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("error creating redis client: %v", err)
 	}
+	fmt.Println("starting the http server")
 	route.StartRouter()
 }

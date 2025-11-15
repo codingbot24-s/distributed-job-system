@@ -45,17 +45,27 @@ func (r *redisClientstruct) CheckRedisConnection() (string, error) {
 }
 
 // TODO: must be safe for concurrent call
-// enque the job into the redis return the job ID or error  
-func (r *redisClientstruct) Enqueue(job *job.Job) error {
+// enque the job into the redis return the job ID or error
+// here we only want to push into redis
+func (r *redisClientstruct) EnqueueToRedis(job *job.Job) (string,error) {
 	// serialize the job into json convert the golang job struct to json
-	_,err := json.Marshal(job)
+	jsonData, err := json.Marshal(*job)
 	if err != nil {
-		return fmt.Errorf("error marshaling struct %w",err)
+		return "",fmt.Errorf("error marshaling struct %w", err)
 	}
 	// push the job to redis
+	streamName := "Jobs"
+	entryID,err := r.client.XAdd(ctx, &redis.XAddArgs{
+		Stream: streamName,
+		ID:     "*",
+		Values: jsonData,
+	}).Result()
+	fmt.Printf("Added entry to stream '%s' with ID: %s\n", streamName, entryID)
+
+	if err != nil {
+		return "",fmt.Errorf("error adding job to stream %w",err)
+	}
 
 	// return the jobId or error
-
-	return nil
+	return streamName,nil
 }
-
